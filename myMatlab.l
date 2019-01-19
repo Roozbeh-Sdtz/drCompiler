@@ -1,5 +1,5 @@
 %{
-    #include "matlabToken.h"
+    #include "y.tab.h"
 %}
 
 digit [0-9]
@@ -8,8 +8,10 @@ real ({digit}+[.]{digit}*)|({digit}*[.]{digit}+)
 
 %%
 [ \t\n]                           ;
+"print"                         return print;
+"exit"                          return exit_command;
 {real}                          return DOUBLE;
-{integer}                       return INTEGER;
+{integer}                       {yylval.num=atoi(yytext);return INTEGER;}
 "function"                      return FUNCTION;
 "end"                           return END;
 "if"                            return IF;
@@ -23,7 +25,7 @@ real ({digit}+[.]{digit}*)|({digit}*[.]{digit}+)
 "continue"                      return CONTINUE;
 "return"                        return RETURN;   
 "break"                         return BREAK;
-[a-zA-Z_][a-zA-Z0-9_]*          return IDENTIFIER;
+[a-zA-Z_][a-zA-Z0-9_]*          {yylval.id = yytext[0];return IDENTIFIER;}
 ","                             return COMMA;
 "."                             return DOT;
 ":"                             return DOTDOT;                        
@@ -52,3 +54,7 @@ real ({digit}+[.]{digit}*)|({digit}*[.]{digit}+)
 .                               printf("unexpected charecter \n");
 %%
 
+int yywrap(void)
+{
+    return 1;
+}
