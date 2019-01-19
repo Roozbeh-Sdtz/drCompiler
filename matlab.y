@@ -56,18 +56,25 @@
 %token DOTDOT                
 %token DIVIDELINEAR          
 %type <num> line exp term
-%type <id> assignment
+%type <id> assignment 
+%type <num> elseif
 
 %%
     line        : assignment ENDLINE {;}
                 | exit_command ENDLINE {exit(EXIT_SUCCESS);}
-                | print exp ENDLINE {printf("print %d\n",$2);}
-                | line assignment ENDLINE {;}
+                | print exp ENDLINE {printf("Print : %d\n",$2); $$ = $2;}
+                | line ELSEIF assignment ENDLINE {;}
                 | line exit_command ENDLINE {exit(EXIT_SUCCESS);}
-                | line print exp ENDLINE {printf("print %d\n",$3);}
+                | line print exp ENDLINE {printf("Print : %d\n",$3); $$ = $3;}
+                | IF exp line END {if ($2) printf("%d\n", $3);}
+                | line IF exp line END {if ($3) printf("%d\n", $4);}
+                | IF exp line ELSE line END {if ($2) printf("%d\n", $3); else printf("%d\n", $5);}
+                | line IF exp line ELSE line END {if ($3) printf("%d\n", $4); else printf("%d\n", $6);}
+                | IF exp line elseif {if ($2) printf("%d\n", $3);}
+                | line IF exp line elseif {if ($3) printf("%d\n", $4);}
                 ;
 
-    assignment  : IDENTIFIER ASSIGN exp {updateSybmbolVal($1,$3);}
+    assignment  : IDENTIFIER ASSIGN exp {updateSybmbolVal($1,$3); $$ = $3;}
                 ;
 
     exp         : term              {$$ = $1;}
@@ -79,8 +86,12 @@
     term        : INTEGER            {$$ = $1;}
                 | IDENTIFIER        {$$ = symbolVal($1);}
                 ;
+    elseif      : ELSEIF exp line END {if ($2) printf("%d\n", $3);}
+                | ELSEIF exp line ELSE line END {if ($2) printf("%d\n", $3); else printf("%d\n", $5);}
+                | ELSEIF exp line elseif {if ($2) printf("%d\n", 3);}
+                ;
+   
 %%
-
 
 int computerSymbolIndex(char token)
 {
